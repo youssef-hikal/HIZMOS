@@ -32,9 +32,9 @@ DHT dht(DHTPIN, DHTTYPE);
 Adafruit_PCD8544 display = Adafruit_PCD8544(CLK_PIN, DIN_PIN, DC_PIN, CE_PIN, RST_PIN);
 
 // Main Menu variables
-const char* mainMenuItems[] = {"1-DHT11", "2-Laser", "3-Ultrasonic", "4-Buzzer"};
+const char* mainMenuItems[] = {"1-DHT11", "2-Laser", "3-Ultrasonic", "4-Buzzer","5-IR-attack","6-wifi-attack","7-ble-attack"};
 int menuIndex = 0;
-const int numOfMainItems = 4;
+const int numOfMainItems = 7;
 bool buttonPressed = false;
 
 // Laser Sub-Menu variables
@@ -259,10 +259,10 @@ void displayUltrasonicData() {
   display.setTextSize(1);
   display.setTextColor(BLACK);
 
-  display.setCursor(0, 0);
-  display.print("Distance: ");
+  display.setCursor(1, 10);
+  display.print("DISTANCE: ");
   display.print(distance);
-  display.println(" cm");
+  display.println("cm");
 
   display.display();
   delay(2000);
