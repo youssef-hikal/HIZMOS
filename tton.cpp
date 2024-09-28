@@ -2,7 +2,7 @@
 #include <Adafruit_PCD8544.h>
 #include <DHT.h>
 
-// Pins for the Nokia 5110 display
+// Pins for Nokia 5110 display
 #define RST_PIN 3
 #define CE_PIN  4
 #define DC_PIN  5
@@ -13,31 +13,50 @@
 #define JOYSTICK_Y A0
 #define BUTTON_PIN 8
 
-// DHT11 sensor
-#define DHTPIN A1  // DHT11 connected to A1
+// DHT11 sensor pins
+#define DHTPIN A1
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 
-// LED pin for Laser control
+// Laser (LED) pin
 #define LED_PIN 9
+
+// Ultrasonic sensor pins
+#define TRIG_PIN 14
+#define ECHO_PIN 16
+
+// Buzzer pin
+#define BUZZER_PIN 10
 
 // Initialize Nokia 5110 display
 Adafruit_PCD8544 display = Adafruit_PCD8544(CLK_PIN, DIN_PIN, DC_PIN, CE_PIN, RST_PIN);
 
-// Menu variables
+// Main Menu variables
 const char* mainMenuItems[] = {"1-DHT11", "2-Laser", "3-Ultrasonic", "4-Buzzer"};
 int menuIndex = 0;
-int numOfMainItems = 4;
+const int numOfMainItems = 4;
 bool buttonPressed = false;
 
-// Laser sub-menu variables
+// Laser Sub-Menu variables
 const char* laserMenuItems[] = {"On", "Off", "Back"};
 int laserMenuIndex = 0;
-int numOfLaserItems = 3;
+const int numOfLaserItems = 3;
 bool inLaserMenu = false;
 
-// Flags for different menus
-bool inDHT11Menu = false;
+// DHT11 Sub-Menu variables
+bool inDHTMenu = false;
+
+// Function Prototypes
+void displayMainMenu();
+void selectMainMenuItem();
+void displayLaserMenu();
+void selectLaserMenuItem();
+void displayDHTMenu();
+void displayDHTData();
+void displayUltrasonicData();
+void controlBuzzer(bool turnOn);
+long readUltrasonicDistance();
+void displayBuzzerStatus(const char* status);
 
 void setup() {
   // Initialize display
@@ -48,11 +67,16 @@ void setup() {
   // Initialize DHT11 sensor
   dht.begin();
   
-  // Setup joystick, button, and LED
+  // Setup joystick, button, LED, ultrasonic, and buzzer pins
   pinMode(JOYSTICK_Y, INPUT);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW);  // Turn off the laser initially
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  digitalWrite(LED_PIN, LOW);    // Laser off initially
+  digitalWrite(BUZZER_PIN, LOW); // Buzzer off initially
 
   // Display initial main menu
   displayMainMenu();
@@ -61,64 +85,45 @@ void setup() {
 void loop() {
   int joystickY = analogRead(JOYSTICK_Y);
 
-  if (!inLaserMenu && !inDHT11Menu) {
+  if (!inLaserMenu && !inDHTMenu) {
     // Main menu navigation
-    if (joystickY < 300) {
-      if (menuIndex > 0) {
-        menuIndex--;
-        displayMainMenu();
-        delay(200);  // Debounce
-      }
-    } else if (joystickY > 700) {
-      if (menuIndex < numOfMainItems - 1) {
-        menuIndex++;
-        displayMainMenu();
-        delay(200);  // Debounce
-      }
+    if (joystickY < 300 && menuIndex > 0) {
+      menuIndex--;
+      displayMainMenu();
+      delay(200);
+    } else if (joystickY > 700 && menuIndex < numOfMainItems - 1) {
+      menuIndex++;
+      displayMainMenu();
+      delay(200);
     }
 
-    // Check button press for main menu
+    // Main menu selection with button press
     if (digitalRead(BUTTON_PIN) == LOW && !buttonPressed) {
       buttonPressed = true;
       selectMainMenuItem();
-      delay(200);  // Debounce
+      delay(200);
     }
   } else if (inLaserMenu) {
     // Laser menu navigation
-    if (joystickY < 300) {
-      if (laserMenuIndex > 0) {
-        laserMenuIndex--;
-        displayLaserMenu();
-        delay(200);  // Debounce
-      }
-    } else if (joystickY > 700) {
-      if (laserMenuIndex < numOfLaserItems - 1) {
-        laserMenuIndex++;
-        displayLaserMenu();
-        delay(200);  // Debounce
-      }
+    if (joystickY < 300 && laserMenuIndex > 0) {
+      laserMenuIndex--;
+      displayLaserMenu();
+      delay(200);
+    } else if (joystickY > 700 && laserMenuIndex < numOfLaserItems - 1) {
+      laserMenuIndex++;
+      displayLaserMenu();
+      delay(200);
     }
 
-    // Check button press for Laser menu
+    // Laser menu selection with button press
     if (digitalRead(BUTTON_PIN) == LOW && !buttonPressed) {
       buttonPressed = true;
       selectLaserMenuItem();
-      delay(200);  // Debounce
+      delay(200);
     }
-  } else if (inDHT11Menu) {
-    // Check button press for DHT11 menu to go back
-    if (digitalRead(BUTTON_PIN) == LOW && !buttonPressed) {
-      buttonPressed = true;
-      inDHT11Menu = false;  // Go back to the main menu
-      displayMainMenu();
-      delay(200);  // Debounce
-    }
-
-    // Display temperature and humidity continuously
-    displayTemperatureHumidity();
   }
 
-  // Reset button state when released
+  // Reset button state
   if (digitalRead(BUTTON_PIN) == HIGH) {
     buttonPressed = false;
   }
@@ -130,97 +135,86 @@ void displayMainMenu() {
   display.setTextSize(1);
   display.setTextColor(BLACK);
 
-  // Print each main menu item and highlight the current one
   for (int i = 0; i < numOfMainItems; i++) {
     if (i == menuIndex) {
       display.setTextColor(WHITE, BLACK);  // Highlight selected item
     } else {
-      display.setTextColor(BLACK, WHITE);  // Normal display for other items
+      display.setTextColor(BLACK, WHITE);  // Normal display for others
     }
-    display.setCursor(0, i * 10);  // Set position of each item
+    display.setCursor(0, i * 10);
     display.println(mainMenuItems[i]);
   }
   display.display();
 }
 
-// Function to handle main menu item selection
+// Handle main menu selection
 void selectMainMenuItem() {
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(BLACK);
-  
-  display.setCursor(0, 10);
-  display.print("Selected: ");
-  display.println(mainMenuItems[menuIndex]);
-
-  display.display();
-  delay(1000);  // Show selection for 1 second
-  // If Laser is selected, go to the Laser menu
-  if (menuIndex == 1) {
-    inLaserMenu = true;
-    displayLaserMenu();
-  }
-  // If DHT11 is selected, display temperature and humidity
-  else if (menuIndex == 0) {
-    inDHT11Menu = true;
-    displayTemperatureHumidity();
-  }
-  // Handle other menu selections here
-  else {
-    displayMainMenu();  // Return to the main menu after selection
+  switch(menuIndex) {
+    case 0:  // DHT11
+      inDHTMenu = true;
+      displayDHTMenu();
+      break;
+    case 1:  // Laser
+      inLaserMenu = true;
+      displayLaserMenu();
+      break;
+    case 2:  // Ultrasonic
+      displayUltrasonicData();
+      break;
+    case 3:  // Buzzer
+      controlBuzzer(true);
+      delay(1000);
+      controlBuzzer(false);
+      break;
+    default:
+      displayMainMenu();
+      break;
   }
 }
 
-// Function to display the Laser control menu
+// Laser Sub-Menu
 void displayLaserMenu() {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(BLACK);
 
-  // Print each Laser menu item and highlight the current one
   for (int i = 0; i < numOfLaserItems; i++) {
     if (i == laserMenuIndex) {
       display.setTextColor(WHITE, BLACK);  // Highlight selected item
     } else {
-      display.setTextColor(BLACK, WHITE);  // Normal display for other items
+      display.setTextColor(BLACK, WHITE);
     }
-    display.setCursor(0, i * 10);  // Set position of each item
+    display.setCursor(0, i * 10);
     display.println(laserMenuItems[i]);
   }
   display.display();
 }
 
-// Function to handle Laser menu item selection
 void selectLaserMenuItem() {
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(BLACK);
-
-  display.setCursor(0, 10);
-  display.print("Laser: ");
-  display.println(laserMenuItems[laserMenuIndex]);
-
-  display.display();
-  delay(1000);  // Show selection for 1 second
-
-  // Control the LED based on Laser menu selection
-  if (laserMenuIndex == 0) {
-    digitalWrite(LED_PIN, HIGH);  // Turn on Laser (LED)
-  } else if (laserMenuIndex == 1) {
-    digitalWrite(LED_PIN, LOW);   // Turn off Laser (LED)
-  } else if (laserMenuIndex == 2) {
-    inLaserMenu = false;  // Go back to main menu
-    displayMainMenu();
-  }
-
-  // Return to the Laser menu after selection unless "Back" is chosen
-  if (laserMenuIndex != 2) {
-    displayLaserMenu();
+  switch(laserMenuIndex) {
+    case 0:  // Turn on Laser
+      digitalWrite(LED_PIN, HIGH);
+      displayLaserMenu();
+      break;
+    case 1:  // Turn off Laser
+      digitalWrite(LED_PIN, LOW);
+      displayLaserMenu();
+      break;
+    case 2:  // Back
+      inLaserMenu = false;
+      displayMainMenu();
+      break;
   }
 }
 
-// Function to display temperature and humidity from DHT11
-void displayTemperatureHumidity() {
+// Display DHT11 Data
+void displayDHTMenu() {
+  displayDHTData();
+  inDHTMenu = false;
+  displayMainMenu();
+}
+
+void displayDHTData() {
   float humidity = dht.readHumidity();
   float temperature = dht.readTemperature();
 
@@ -228,19 +222,72 @@ void displayTemperatureHumidity() {
   display.setTextSize(1);
   display.setTextColor(BLACK);
 
+  if (isnan(humidity) || isnan(temperature)) {
+    display.println("Error reading DHT");
+  } else {
+    display.setCursor(0, 0);
+    display.print("Temp: ");
+    display.print(temperature);
+    display.println(" C");
+
+    display.setCursor(0, 10);
+    display.print("Humidity: ");
+    display.print(humidity);
+    display.println(" %");
+  }
+  display.display();
+  delay(2000);
+}
+
+// Ultrasonic Sensor Functions
+long readUltrasonicDistance() {
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  long duration = pulseIn(ECHO_PIN, HIGH);
+  long distance = (duration / 2) * 0.0343;
+  return distance;
+}
+
+void displayUltrasonicData() {
+  long distance = readUltrasonicDistance();
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(BLACK);
+
   display.setCursor(0, 0);
-  display.print("Temp: ");
-  display.print(temperature);
-  display.println(" C");
-
-  display.setCursor(0, 10);
-  display.print("Humidity: ");
-  display.print(humidity);
-  display.println(" %");
-
-  display.setCursor(0, 30);
-  display.println("back");
-  display.println("to menu");
+  display.print("Distance: ");
+  display.print(distance);
+  display.println(" cm");
 
   display.display();
+  delay(2000);
+  displayMainMenu();
+}
+
+// Buzzer Control Functions
+void controlBuzzer(bool turnOn) {
+  if (turnOn) {
+    digitalWrite(BUZZER_PIN, HIGH);
+    displayBuzzerStatus("Buzzer ON");
+  } else {
+    digitalWrite(BUZZER_PIN, LOW);
+    displayBuzzerStatus("Buzzer OFF");
+  }
+}
+
+void displayBuzzerStatus(const char* status) {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(BLACK);
+
+  display.setCursor(0, 10);
+  display.print(status);
+
+  display.display();
+  delay(1000);
 }
