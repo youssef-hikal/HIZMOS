@@ -1,0 +1,138 @@
+#include <Adafruit_GFX.h>
+#include <Adafruit_PCD8544.h>
+
+// تعريف الشاشة
+#define SCREEN_CLK 7  // تعديل هذه الأرقام حسب توصيلاتك
+#define SCREEN_DIN 6
+#define SCREEN_DC 5
+#define SCREEN_CS 4
+#define SCREEN_RST 3
+Adafruit_PCD8544 display(SCREEN_CLK, SCREEN_DIN, SCREEN_DC, SCREEN_CS, SCREEN_RST);
+
+// تعريف أزرار الجويستيك
+#define JOYSTICK_X A0
+#define JOYSTICK_Y A1
+#define JOYSTICK_SW 2
+
+// المتغيرات الأساسية
+int menuOption = 0;
+const char* mainMenu[] = {"NFC", "RFID", "IR", "Wi-Fi", "Bluetooth", "sub-GHz"};
+const int mainMenuSize = sizeof(mainMenu) / sizeof(mainMenu[0]);
+
+void setup() {
+  pinMode(JOYSTICK_SW, INPUT_PULLUP); // زر التحديد
+  display.begin();
+  display.setContrast(50);
+  display.clearDisplay();
+  display.display();
+}
+
+void loop() {
+  int xValue = analogRead(JOYSTICK_X);
+  int yValue = analogRead(JOYSTICK_Y);
+  
+  // التنقل في القائمة باستخدام الجويستيك
+  if (yValue < 400) { // للأعلى
+    menuOption = (menuOption - 1 + mainMenuSize) % mainMenuSize;
+    delay(200); // تأخير صغير للتنقل
+  } else if (yValue > 600) { // للأسفل
+    menuOption = (menuOption + 1) % mainMenuSize;
+    delay(200);
+  }
+
+  // عرض القائمة الأساسية
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println("Main Menu:");
+  for (int i = 0; i < mainMenuSize; i++) {
+    if (i == menuOption) {
+      display.print("> "); // لتحديد العنصر الحالي
+    } else {
+      display.print("  ");
+    }
+    display.println(mainMenu[i]);
+  }
+  display.display();
+
+  // التحقق من الضغط على الزر لتحديد الخيار
+  if (digitalRead(JOYSTICK_SW) == LOW) {
+    delay(200); // تأخير للتجنب الضغط المتكرر
+    openSubMenu(menuOption);
+  }
+}
+
+void openSubMenu(int option) {
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print("Selected: ");
+  display.println(mainMenu[option]);
+  display.display();
+
+  // هنا يمكننا إضافة منطق القائمة الفرعية لكل خيار
+  switch (option) {
+    case 0:
+      // منطق القائمة الفرعية لـ NFC
+      displaySubMenu("NFC Options", {"Read", "Emulate", "Save"}, 3);
+      break;
+    case 1:
+      // منطق القائمة الفرعية لـ RFID
+      displaySubMenu("RFID Options", {"Read", "Emulate", "Save"}, 3);
+      break;
+    case 2:
+      // منطق القائمة الفرعية لـ IR
+      displaySubMenu("IR Options", {"Read", "Save", "Emulate"}, 3);
+      break;
+    case 3:
+      // منطق القائمة الفرعية لـ Wi-Fi
+      displaySubMenu("Wi-Fi Options", {"Deauth", "Portal"}, 2);
+      break;
+    case 4:
+      // منطق القائمة الفرعية لـ Bluetooth
+      displaySubMenu("Bluetooth Options", {"Scan", "Spoofer"}, 2);
+      break;
+    case 5:
+      // منطق القائمة الفرعية لـ sub-GHz
+      displaySubMenu("sub-GHz Options", {"Read", "Emulate"}, 2);
+      break;
+  }
+}
+
+void displaySubMenu(const char* title, const char* options[], int size) {
+  int subMenuOption = 0;
+  while (true) {
+    int xValue = analogRead(JOYSTICK_X);
+    int yValue = analogRead(JOYSTICK_Y);
+    
+    // التنقل في القائمة الفرعية
+    if (yValue < 400) {
+      subMenuOption = (subMenuOption - 1 + size) % size;
+      delay(200);
+    } else if (yValue > 600) {
+      subMenuOption = (subMenuOption + 1) % size;
+      delay(200);
+    }
+
+    // عرض القائمة الفرعية
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println(title);
+    for (int i = 0; i < size; i++) {
+      if (i == subMenuOption) {
+        display.print("> ");
+      } else {
+        display.print("  ");
+      }
+      display.println(options[i]);
+    }
+    display.display();
+
+    // الخروج من القائمة الفرعية أو اختيار خيار
+    if (digitalRead(JOYSTICK_SW) == LOW) {
+      delay(200);
+      if (subMenuOption == 0) {
+        // هنا يمكن تنفيذ إجراء "Read" أو إجراء آخر حسب القائمة الفرعية
+      }
+      break; // الخروج من القائمة الفرعية للعودة للقائمة الرئيسية
+    }
+  }
+}
