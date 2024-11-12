@@ -3,13 +3,13 @@
 
 // Nokia 5110 LCD display pin setup
 #define PIN_RESET 8
-#define PIN_CE 15
+#define PIN_CE 5
 #define PIN_DC 4
 #define PIN_DIN 7
 #define PIN_CLK 6
 
 // Button pin setup
-#define BUTTON_UP 15
+#define BUTTON_UP 18
 #define BUTTON_SELECT 16
 #define BUTTON_DOWN 17
 
