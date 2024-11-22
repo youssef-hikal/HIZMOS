@@ -20,6 +20,10 @@
 const char manualImage1[] = { /* Image data here */ };
 const char manualImage2[] = { /* Image data here */ };
 const char manualImage3[] = { /* Image data here */ };
+const char manualImage4[] = { /* Image data here */ };
+const char manualImage5[] = { /* Image data here */ };
+const char manualImage6[] = { /* Image data here */ };
+
 
 // Automatic images (replace these with actual image data)
 const char autoImage1[] = { /* Image data here */ };
@@ -27,7 +31,7 @@ const char autoImage2[] = { /* Image data here */ };
 const char autoImage3[] = { /* Image data here */ };
 
 // Arrays of images
-const char* manualImages[] = {manualImage1, manualImage2, manualImage3};
+const char* manualImages[] = {manualImage1, manualImage2, manualImage3,manualImage4, manualImage5, manualImage6};
 const char* autoImages[] = {autoImage1, autoImage2, autoImage3};
 
 // Image counters
