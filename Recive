@@ -1,0 +1,63 @@
+#include <esp_now.h>
+#include <WiFi.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_PCD8544.h>
+
+// Nokia 5110 connections
+#define RST 14
+#define CE 5
+#define DC 19
+#define DIN 23
+#define CLK 18
+
+// Initialize the Nokia 5110 display
+Adafruit_PCD8544 display = Adafruit_PCD8544(CLK, DIN, DC, CE, RST);
+
+// Structure to receive temperature data
+typedef struct {
+  float temperature;
+} TemperatureData;
+
+TemperatureData receivedData;
+
+// Callback when data is received
+void onDataReceive(const uint8_t *mac, const uint8_t *incomingData, int len) {
+  memcpy(&receivedData, incomingData, sizeof(receivedData));
+  Serial.print("Temperature Received: ");
+  Serial.println(receivedData.temperature);
+
+  // Update display
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(BLACK);
+  display.setCursor(10, 20);
+  display.print("Temp: ");
+  display.print(receivedData.temperature, 1); // One decimal place
+  display.print(" C");
+  display.display();
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // Initialize display
+  display.begin();
+  display.setContrast(50);
+  display.clearDisplay();
+  display.display();
+
+  // Initialize ESP-NOW
+  WiFi.mode(WIFI_STA);
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+  Serial.println("ESP-NOW initialized");
+
+  // Register callback for received data
+  esp_now_register_recv_cb(onDataReceive);
+}
+
+void loop() {
+  // Nothing to do in the loop
+}
