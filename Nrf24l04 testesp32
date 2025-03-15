@@ -1,0 +1,29 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+
+#define CE_PIN  4
+#define CSN_PIN 5
+
+RF24 radio(CE_PIN, CSN_PIN);
+
+void setup() {
+    Serial.begin(115200);
+    radio.begin();
+    radio.setPALevel(RF24_PA_HIGH); // أقصى طاقة للإرسال
+}
+
+void loop() {
+    byte jammingData[32]; // حزمة مزعجة عشوائية
+    for (int i = 0; i < 32; i++) {
+        jammingData[i] = random(0, 256);
+    }
+
+    for (int channel = 0; channel <= 125; channel++) {
+        radio.setChannel(channel); // التبديل بين القنوات بسرعة
+        radio.stopListening(); // تفعيل وضع الإرسال
+        radio.write(jammingData, sizeof(jammingData));
+    }
+
+    delay(5); // تأخير بسيط قبل تكرار التشويش
+}
