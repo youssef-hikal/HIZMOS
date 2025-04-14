@@ -16,7 +16,7 @@
 #define BTN_SELECT 26
 #define BTN_BACK   25
 
-// HSPI Configuration for SD Card
+// SD Card على HSPI
 #define HSPI_CLK   14
 #define HSPI_MISO  12  
 #define HSPI_MOSI  13 
@@ -50,7 +50,6 @@ const uint8_t fileIcon[] PROGMEM = {
 enum State { MENU, FILE_VIEW };
 State currentState = MENU;
 
-// الملفات
 #define MAX_FILES 50
 String fileNames[MAX_FILES];
 int fileCount = 0;
@@ -80,6 +79,25 @@ void listFilesFromSD() {
   root.close();
 }
 
+void drawScrollDots() {
+  int totalDots = fileCount;       // نقطة لكل ملف
+  int maxDots = 48;                // عدد البكسلات بالطول
+  float step = (float)maxDots / totalDots;
+
+  for (int i = 0; i < totalDots; i++) {
+    int y = i * step;
+
+    if (i == selectedItem) {
+      // ← مستطيل كبير يمثل الملف الحالي
+      display.fillRect(81, y, 3, step > 5 ? 5 : step, BLACK);
+    } else {
+      // ← نقطة صغيرة تمثل باقي الملفات
+      display.drawPixel(83, y + 1, BLACK);
+    }
+  }
+}
+
+
 void drawMenu() {
   display.clearDisplay();
   int visibleItems = min(5, fileCount - topItem);
@@ -88,7 +106,7 @@ void drawMenu() {
     int y = i * 12;
 
     if (index == selectedItem) {
-      display.fillRect(0, y, 84, 12, BLACK);
+      display.fillRoundRect(0, y, 80, 12,2,1);
       display.drawBitmap(2, y + 1, getIconForFile(fileNames[index]), 10, 10, WHITE);
       display.setTextColor(WHITE);
     } else {
@@ -99,6 +117,8 @@ void drawMenu() {
     display.setCursor(14, y + 2);
     display.print(fileNames[index]);
   }
+
+  drawScrollDots();  // ← ← ← نرسم العمود اللي على اليمين
   display.display();
 }
 
@@ -180,3 +200,5 @@ void loop() {
     }
   }
 }
+
+
