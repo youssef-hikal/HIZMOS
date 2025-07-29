@@ -6,6 +6,7 @@
 
 
 📡 Infrared (IR)
+
 ❌ Universal Remotes (Work in progress)
 
 ✅ Read Remotes
@@ -13,6 +14,7 @@
 ✅ Save Remotes
 
 💻 BadUSB
+
 ✅ Demo Payload
 
 ✅ Keyboard Emulation
@@ -20,6 +22,7 @@
 ✅ HID Script Execution
 
 📶 NRF Tools
+
 ✅ Signal Analyzer
 
 ❌ Hijack Nerf Devices (Work in progress)
@@ -29,6 +32,7 @@
 ✅ Jammer (Specific Channel)
 
 🗂️ File Manager
+
 ✅ Browse Files
 
 ✅ Rename Files
@@ -36,9 +40,11 @@
 ✅ Delete Files
 
 🎮 Mini Apps
+
 ✅ Basic Flipper-like Apps
 
 ⚙️ Settings
+
 ✅ Show Usage
 
 ✅ Format SD Card
@@ -54,6 +60,7 @@
 ✅ Check Connected Devices
 
 🧩 Not Yet Implemented
+
 🔲 NFC
 
 🔲 Sub-GHz
