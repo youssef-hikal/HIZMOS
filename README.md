@@ -3,6 +3,8 @@
 ![2c21e681-e382-47b3-a7ce-eefbc940778c](https://github.com/user-attachments/assets/c08b5d2d-e6b2-426d-a124-a43df04efb32)
 
 ![c78fd4cc-1258-4d3f-a915-884f15570ed6](https://github.com/user-attachments/assets/529b0bcc-a76e-46e4-a13d-93ac5d638a06)
+<img width="803" height="710" alt="image" src="https://github.com/user-attachments/assets/0540debd-45c1-4fdf-a868-3100df7b3416" />
+
 
 
 📡 Infrared (IR)
