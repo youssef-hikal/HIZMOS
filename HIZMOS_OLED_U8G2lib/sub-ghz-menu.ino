@@ -1,5 +1,5 @@
 void handlesubghzmenu() {
-  const char* menuItems[] = {"READ", "READ RAW", "FREQUENCY ANALYZER", "JAMMER", "SAVED SIGNALS"};
+  const char* menuItems[] = {"SPECTRUM GRAPGH","READ", "READ RAW", "FREQUENCY ANALYZER", "JAMMER","BRUTE FORCE","CONFIG", "SAVED SIGNALS"};
   const int menuLength = sizeof(menuItems) / sizeof(menuItems[0]);
   const int visibleItems = 3;
 
@@ -30,16 +30,46 @@ void handlesubghzmenu() {
   if (digitalRead(BTN_SELECT) == LOW) {
     switch (selectedItem) {
       case 0:
-       ///read();
+       ///spectrum graph
+       //lazyinit();
+       lazyInitCC1101(1); // شغل CC1101 الأول
+       runLoop(drawHistogram);
         break;
       case 1:
-       ///read raw(); 
+       ///read 
        break;
       case 2:
-       ///jammer();
+      
         break;
       case 3: 
-      ///saved();
+       ///spectrum analyzer
+       //lazyinit();
+       //lazyInit(2); // شغل CC1101 الأول
+       lazyInitCC1101(1);
+       runLoop(SPECTRUMANALYZER);
+       break;
+
+       case 4:
+       ///////jammer///////
+       //lazyinit();
+       //lazyInit(2); // شغل CC1101 الأول
+       lazyInitCC1101(1);
+       runLoop(JAMMINGCC1101);
+      
+       break;
+
+       case 5:
+       //lazyinit();
+       //lazyInit(2); // شغل CC1101 الأول
+       lazyInitCC1101(2);
+       runLoop(drawBruteForce);
+
+       break;
+
+       case 6:
+       //lazyinit();
+       lazyInitCC1101(2);
+       runLoop(drawSettingsMenu);
        break;
       
     }

@@ -36,6 +36,7 @@ void checksysdevices() {
     
   }
 
+
   // ----- عرض النتائج -----
   u8g2.clearBuffer();
   u8g2.setFontMode(1);
@@ -61,12 +62,6 @@ void checksysdevices() {
 
   u8g2.sendBuffer();
 }
-
-
-
-
-   
-
 
 
 

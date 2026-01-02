@@ -1,5 +1,5 @@
 void handlegpiomenu() {
-  const char* menuItems[] = {"i2c scanner", "dth11", "gps", "signal generator", "button tester"};
+  const char* menuItems[] = {"i2c scanner", "check sdcard", "gps", "signal generator", "button tester"};
   const int menuLength = sizeof(menuItems) / sizeof(menuItems[0]);
   const int visibleItems = 3;
 
@@ -35,7 +35,8 @@ void handlegpiomenu() {
        runLoop(i2cscanner);
         break;
       case 1:
-       ///writeNFCData(); 
+       ///check sd card 
+        runLoop(checksdcardpin);
        break;
       case 2:
        ///showSavedTags();
@@ -86,4 +87,19 @@ void handlegpiomenu() {
 
   u8g2.sendBuffer();
   
+}
+
+
+void checksdcardpin() {
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_6x12_tf);
+
+  if (digitalRead(SD_DETECT_PIN) == LOW) {
+    u8g2.drawStr(20, 35, "SD Card Inserted");
+  } else {
+    u8g2.drawStr(18, 35, "SD Card Removed");
+  }
+
+  u8g2.sendBuffer();
+  delay(200);
 }
