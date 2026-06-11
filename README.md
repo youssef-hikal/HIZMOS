@@ -88,30 +88,5 @@ Use the following files and flash addresses:
 - Target chip: **ESP32-S3(N16R8)**
 
 
-
-# Flashing ESP32-S3 Firmware with ESP Web Tool
-
-Use the following files and flash addresses:
-
-| Address | File |
-|----------|----------|
-| 0x0000 | HIZMOS_OLED_U8G2lib.ino.bootloader.bin |
-| 0x8000 | HIZMOS_OLED_U8G2lib.ino.partitions.bin |
-| 0x10000 | HIZMOS_OLED_U8G2lib.ino.bin |
-
-## Steps
-
-1. Open https://esptool.spacehuhn.com/
-2. Click **Connect** and select your ESP32-S3 serial port.
-3. Click **Add File** and add:
-   - `HIZMOS_OLED_U8G2lib.ino.bootloader.bin` at address `0x0000`
-   - `HIZMOS_OLED_U8G2lib.ino.partitions.bin` at address `0x8000`
-   - `HIZMOS_OLED_U8G2lib.ino.bin` at address `0x10000`
-4. Enable **Erase Before Flashing** (recommended).
-5. Click **Program**.
-6. Wait for flashing to complete and reboot the device.
-
-## Notes
-
 - Target chip: **ESP32-S3(N16R8)**
 
