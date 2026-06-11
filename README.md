@@ -1,5 +1,162 @@
 
 ![WhatsApp Image 2026-02-07 at 1 03 42 AM (1)](https://github.com/user-attachments/assets/6f943263-805b-42b5-a672-a311f1e12852)
-![5969680611171568528](https://github.com/user-attachments/assets/ad997826-70bd-429a-bb17-6d909a68d6c0)
-![5969680611171568527](https://github.com/user-attachments/assets/043d085b-9261-4b27-b2c9-2ca441de77e3)
-<img width="803" height="710" alt="524556244-9490e63d-0ef2-4b6a-aa0e-8bc1ead2c588" src="https://github.com/user-attachments/assets/c9a22f51-4bba-4547-a609-1cf6303ac759" />
+# ESP32-S3 connection Map
+
+## I2C Interface
+| SDA | GPIO 8 |
+| SCL | GPIO 9 |
+
+## IR Interface
+|---------|---------|
+| IR Transmitter | GPIO 35 |
+| IR Receiver    | GPIO 36 |
+
+## nRF24L01 Modules (FSPI)
+
+### Shared SPI Bus
+
+|---------|---------|
+| SCK | GPIO 18 |
+| MISO | GPIO 16 |
+| MOSI | GPIO 17 |
+
+### nRF24 #1
+
+|---------|---------|
+| CE | GPIO 10 |
+| CSN | GPIO 11 |
+
+### nRF24 #2
+
+|---------|---------|
+| CE | GPIO 12 |
+| CSN | GPIO 13 |
+
+## CC1101 Modules
+
+### Shared SPI Bus
+
+|---------|---------|
+| SCK | GPIO 15 |
+| MISO | GPIO 3 |
+| MOSI | GPIO 46 |
+
+### CC1101 #1
+
+|---------|---------|
+| CS | GPIO 45 |
+| GDO0 | GPIO 21 |
+| GDO2 | GPIO 47 |
+
+### CC1101 #2
+
+|---------|---------|
+| CS | GPIO 40 |
+| GDO0 | GPIO 41 |
+| GDO2 | GPIO 42 |
+
+## SD Card (HSPI)
+
+|---------|---------|
+| SCK | GPIO 14 |
+| MISO | GPIO 39 |
+| MOSI | GPIO 38 |
+| CS | GPIO 37 |
+
+## Navigation Buttons
+
+|---------|---------|
+| UP | GPIO 4 |
+| DOWN | GPIO 5 |
+| SELECT | GPIO 6 |
+| BACK | GPIO 7 |
+| LEFT | GPIO 1 |
+| RIGHT | GPIO 2 |
+
+---
+
+## Complete Connection Diagram
+
+```text
+ESP32-S3
+│
+├── I2C
+│   ├── SDA  → GPIO8
+│   └── SCL  → GPIO9
+│
+├── IR
+│   ├── TX   → GPIO35
+│   └── RX   → GPIO36
+│
+├── nRF24 #1
+│   ├── CE   → GPIO10
+│   ├── CSN  → GPIO11
+│   ├── SCK  → GPIO18
+│   ├── MISO → GPIO16
+│   └── MOSI → GPIO17
+│
+├── nRF24 #2
+│   ├── CE   → GPIO12
+│   ├── CSN  → GPIO13
+│   ├── SCK  → GPIO18
+│   ├── MISO → GPIO16
+│   └── MOSI → GPIO17
+│
+├── CC1101 #1
+│   ├── CS   → GPIO45
+│   ├── GDO0 → GPIO21
+│   ├── GDO2 → GPIO47
+│   ├── SCK  → GPIO15
+│   ├── MISO → GPIO3
+│   └── MOSI → GPIO46
+│
+├── CC1101 #2
+│   ├── CS   → GPIO40
+│   ├── GDO0 → GPIO41
+│   ├── GDO2 → GPIO42
+│   ├── SCK  → GPIO15
+│   ├── MISO → GPIO3
+│   └── MOSI → GPIO46
+│
+├── SD Card
+│   ├── CS   → GPIO37
+│   ├── SCK  → GPIO14
+│   ├── MISO → GPIO39
+│   └── MOSI → GPIO38
+│
+└── Buttons
+    ├── UP     → GPIO4
+    ├── DOWN   → GPIO5
+    ├── SELECT → GPIO6
+    ├── BACK   → GPIO7
+    ├── LEFT   → GPIO1
+    └── RIGHT  → GPIO2
+
+
+
+# Flashing ESP32-S3 Firmware with ESP Web Tool
+
+Use the following files and flash addresses:
+
+| Address | File |
+|----------|----------|
+| 0x0000 | HIZMOS_OLED_U8G2lib.ino.bootloader.bin |
+| 0x8000 | HIZMOS_OLED_U8G2lib.ino.partitions.bin |
+| 0x10000 | HIZMOS_OLED_U8G2lib.ino.bin |
+
+## Steps
+
+1. Open https://esptool.spacehuhn.com/
+2. Click **Connect** and select your ESP32-S3 serial port.
+3. Click **Add File** and add:
+   - `HIZMOS_OLED_U8G2lib.ino.bootloader.bin` at address `0x0000`
+   - `HIZMOS_OLED_U8G2lib.ino.partitions.bin` at address `0x8000`
+   - `HIZMOS_OLED_U8G2lib.ino.bin` at address `0x10000`
+4. Enable **Erase Before Flashing** (recommended).
+5. Click **Program**.
+6. Wait for flashing to complete and reboot the device.
+
+## Notes
+
+- Target chip: **ESP32-S3(N16R8)**
+
